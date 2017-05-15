@@ -1,7 +1,3 @@
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "sfml-network-d.lib")
-#pragma comment(lib, "sfml-graphics-d.lib")
-#pragma comment(lib, "sfml-system-d.lib")
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -76,8 +72,7 @@ void ScreenShot(const std::string& BmpName)
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-	CLSID   encoderClsid;
-	Status  stat;
+	CLSID encoderClsid;
 	Gdiplus::Image* image = new Gdiplus::Image(L"Image.bmp");
 	GetEncoderClsid(L"image/png", &encoderClsid);
 	image->Save(L"Image.png", &encoderClsid, NULL);
