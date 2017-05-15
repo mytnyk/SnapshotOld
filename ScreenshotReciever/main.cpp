@@ -1,6 +1,3 @@
-#pragma comment(lib, "sfml-network-d.lib")
-#pragma comment(lib, "sfml-graphics-d.lib")
-#pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <Windows.h>
 #include <fstream>
