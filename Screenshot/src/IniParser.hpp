@@ -2,14 +2,14 @@
 #include <string>
 #include <tchar.h>
 
-using namespace std;
+
 class IniParser
 {
 public:
-	IniParser(string path);
-	void LoadFile(string path);
-	basic_string<TCHAR> GetValue(wstring key);
+	IniParser(const std::wstring& path);
+	void LoadFile(const std::wstring& path);
+  std::wstring GetValue(const std::wstring& key);
 private:
-	string path;
+  std::wstring _path;
 };
 

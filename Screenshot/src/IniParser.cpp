@@ -7,21 +7,19 @@
 #include <istream>
 #include <tchar.h>
 
-IniParser::IniParser(string path)
+IniParser::IniParser(const std::wstring& path)
 {
-	this->path = path;
+	_path = path;
 }
 
-void IniParser::LoadFile(string path)
+void IniParser::LoadFile(const std::wstring& path)
 {
-	this->path = path;
+	_path = path;
 }
 
-basic_string<TCHAR> IniParser::GetValue(wstring key)
+std::wstring IniParser::GetValue(const std::wstring& key)
 {
-	LPCTSTR path = L"C:\\ProgramData\\Screenshot\\config.ini";
-	TCHAR protocolChar[80];
-	GetPrivateProfileString(_T("Config"), key.c_str(), _T(""), protocolChar, 80, path);
-	std::basic_string<TCHAR> value(protocolChar);
-	return value;
+	wchar_t protocolChar[80];
+	GetPrivateProfileStringW(L"Config", key.c_str(), L"", protocolChar, 80, _path.c_str());
+	return protocolChar;
 }
