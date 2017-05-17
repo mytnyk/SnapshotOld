@@ -9,17 +9,27 @@
 
 IniParser::IniParser(const std::wstring& path)
 {
-	_path = path;
+  if (FileExits(std::string(path.begin(), path.end())))
+  {
+    _path = path;
+  }
+  else
+  {
+    printf("Error: cannot find .ini file");
+  }
 }
 
-void IniParser::LoadFile(const std::wstring& path)
-{
-	_path = path;
+bool FileExits(const std::string& name) {
+  struct stat buffer;
+  return (stat(name.c_str(), &buffer) == 0);
 }
 
-std::wstring IniParser::GetValue(const std::wstring& key)
+bool IniParser::GetValue(std::wstring& value, const std::wstring& key)
 {
 	wchar_t protocolChar[80];
-	GetPrivateProfileStringW(L"Config", key.c_str(), L"", protocolChar, 80, _path.c_str());
-	return protocolChar;
+	DWORD retval = GetPrivateProfileStringW(L"Config", key.c_str(), L"", protocolChar, 80, _path.c_str());
+  if (retval == 0)
+    return false;
+  value = protocolChar;
+  return true;
 }

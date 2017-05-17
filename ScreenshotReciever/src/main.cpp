@@ -1,3 +1,4 @@
+#pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <Windows.h>
 #include <fstream>
@@ -5,7 +6,7 @@
 #include <time.h>
 #include <vector>
 #include <SFML\Network.hpp>
-
+#include <stdio.h>
 
 using namespace sf;
 
@@ -26,17 +27,25 @@ void Save(Packet& packet)
 
 
 int main()
-  {
+{
   while (true)
-    {
+  {
     TcpSocket socket;
     TcpListener listener;
-    listener.listen(2000);
-    listener.accept(socket);
-
-    Packet packet;
-    socket.receive(packet);
-    Save(packet);
+    if (listener.listen(2001))
+    {
+      printf("Error: cannot listen at 2001 port");
     }
-  return 0;
+    if (listener.accept(socket)) 
+    {
+      printf("Error: cannot accept socket");
+    }
+    Packet packet;
+    if (socket.receive(packet) != sf::Socket::Status::Done)
+    {
+      printf("Error: cannot recieve packet");
+    }
+    Save(packet);
   }
+  return 0;
+}
