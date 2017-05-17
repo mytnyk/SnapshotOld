@@ -27,25 +27,32 @@ void Save(Packet& packet)
 
 
 int main()
-{
-  while (true)
   {
+  while (true)
+    {
     TcpSocket socket;
     TcpListener listener;
-    if (listener.listen(2001))
-    {
+    sf::Socket::Status status = listener.listen(2001);
+    if (status != sf::Socket::Status::Done)
+      {
       printf("Error: cannot listen at 2001 port");
-    }
-    if (listener.accept(socket)) 
-    {
+      }
+
+    status = listener.accept(socket);
+    if (status != sf::Socket::Status::Done)
+      {
       printf("Error: cannot accept socket");
-    }
+      }
+
     Packet packet;
-    if (socket.receive(packet) != sf::Socket::Status::Done)
-    {
+    if (socket.receive(packet) == sf::Socket::Status::Done)
+      {
+      Save(packet);
+      }
+    else
+      {
       printf("Error: cannot recieve packet");
+      }
     }
-    Save(packet);
-  }
   return 0;
-}
+  }

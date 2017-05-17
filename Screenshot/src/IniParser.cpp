@@ -7,21 +7,10 @@
 #include <istream>
 #include <tchar.h>
 
+
 IniParser::IniParser(const std::wstring& path)
 {
-  if (FileExits(std::string(path.begin(), path.end())))
-  {
     _path = path;
-  }
-  else
-  {
-    printf("Error: cannot find .ini file");
-  }
-}
-
-bool FileExits(const std::string& name) {
-  struct stat buffer;
-  return (stat(name.c_str(), &buffer) == 0);
 }
 
 bool IniParser::GetValue(std::wstring& value, const std::wstring& key)
